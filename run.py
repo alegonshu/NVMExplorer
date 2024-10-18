@@ -130,16 +130,16 @@ if __name__ == '__main__':
       if config["experiment"]["exp_name"]:
           exp_name = config["experiment"]["exp_name"]
   if "read_frequency" in config["experiment"]:
-      if config["experiment"]["read_frequency"]:
+      if isinstance(config["experiment"]["read_frequency"], (int, float)):
           read_frequency = config["experiment"]["read_frequency"]
   if "write_frequency" in config["experiment"]:
-      if config["experiment"]["write_frequency"]:
+      if isinstance(config["experiment"]["write_frequency"], (int, float)):
           write_frequency = config["experiment"]["write_frequency"]
   if "read_size" in config["experiment"]:
-      if config["experiment"]["read_size"]:
+      if isinstance(config["experiment"]["read_size"], (int,float)):
           read_size = config["experiment"]["read_size"]
   if "write_size" in config["experiment"]:
-      if config["experiment"]["write_size"]:
+     if isinstance(config["experiment"]["write_size"], (int,float)):
           write_size = config["experiment"]["write_size"]
   if "working_set" in config["experiment"]:
       if config["experiment"]["working_set"]:
