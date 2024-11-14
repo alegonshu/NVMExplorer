@@ -44,10 +44,8 @@ class ExperimentResult:
     #calculate total # reads / s using word width and access pattern
     if (self.access_pattern.read_freq == -1 or self.access_pattern.write_freq == -1): #if frequency unavailable, approx using total reads & total ins, & freq
       #TODO also check that total reads/writes/ins are defined properly
-      print(self.access_pattern.read_freq)
       self.access_pattern.read_freq = (self.access_pattern.total_reads / self.access_pattern.total_ins) / 1.e8 #FIXME yikes I'm having to assume an IPC to approximate this?
       self.access_pattern.write_freq = (self.access_pattern.total_writes / self.access_pattern.total_ins) / 1.e8 #FIXME yikes I'm having to assume an IPC to approximate this?
-      print(self.access_pattern.read_freq)
     self.read_per_s = np.ceil((8 * self.access_pattern.read_size * self.access_pattern.read_freq) / self.input_cfg.word_width)
     self.total_dynamic_read_power = self.read_per_s * self.output.read_energy / 1000. / 1000. / 1000. #scale to mW  FIXME: CL added
       #calculate total # writes / s

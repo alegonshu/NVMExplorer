@@ -44,7 +44,7 @@ class SRAMCellConfig(NVSimCellConfig):
 -GlobalWireUseLowSwing: No
 -Routing: non-H-tree
 -InternalSensing: false
--Temperature (K): 350
+-Temperature (K): 310
 -BufferDesignOptimization: balanced
 '''
 		):
@@ -117,7 +117,7 @@ class RRAMCellConfig(NVSimCellConfig):
 -GlobalWireUseLowSwing: No
 -Routing: H-tree
 -InternalSensing: true
--Temperature (K): 350
+-Temperature (K): 310
 -BufferDesignOptimization: balanced
 '''
 		):
@@ -212,7 +212,7 @@ class STTRAMCellConfig(NVSimCellConfig):
 -GlobalWireUseLowSwing: No
 -Routing: H-tree
 -InternalSensing: true
--Temperature (K): 350
+-Temperature (K): 310
 -BufferDesignOptimization: balanced
 '''
 		):
@@ -287,7 +287,7 @@ class PCMCellConfig(NVSimCellConfig):
 -GlobalWireUseLowSwing: No
 -Routing: H-tree
 -InternalSensing: true
--Temperature (K): 350
+-Temperature (K): 310
 -BufferDesignOptimization: balanced
 '''
 		):
@@ -368,7 +368,7 @@ class FeFETCellConfig(NVSimCellConfig):
 -GlobalWireUseLowSwing: No
 -Routing: H-tree
 -InternalSensing: true
--Temperature (K): 350
+-Temperature (K): 310
 -BufferDesignOptimization: balanced
 '''
 		):

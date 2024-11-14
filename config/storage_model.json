@@ -1,0 +1,26 @@
+{
+    "experiment": {
+        "read_frequency": 12,
+        "write_frequency": 400000,
+        "read_size": 0,
+        "write_size": 2,
+        "cell_type": [
+            "PCM"
+        ],
+        "process_node": 22,
+        "opt_target": [
+            "LeakagePower"
+        ],
+        "word_width": 16,
+        "capacity": [
+            1
+        ],
+        "bits_per_cell": [
+            1
+        ],
+        "nvsim_path": "/Users/alejo/GitHub/aloha-verilog/storage/nvmexplorer/nvmexplorer_src/nvsim_src/nvsim",
+        "output_path": "/Users/alejo/GitHub/aloha-verilog/storage/nvmexplorer/output",
+        "custom_cells": true
+    },
+    "custom_cells": []
+}
