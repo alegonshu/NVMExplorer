@@ -34,50 +34,42 @@ class ExperimentResult:
     self.total_power = 0
     self.total_write_energy = 0
     self.total_read_energy = 0
+    self.total_energy = 0
     self.total_read_latency = 0
     self.total_write_latency = 0
+    self.total_latency = 0
     self.read_bw_utilization = 0
     self.write_bw_utilization = 0
     self.time_until_degraded = 0
+    self.read_accesses = 0
+    self.write_accesses = 0
 
   def evaluate(self):
-    #calculate total # reads / s using word width and access pattern
-    if (self.access_pattern.read_freq == -1 or self.access_pattern.write_freq == -1): #if frequency unavailable, approx using total reads & total ins, & freq
-      #TODO also check that total reads/writes/ins are defined properly
-      self.access_pattern.read_freq = (self.access_pattern.total_reads / self.access_pattern.total_ins) / 1.e8 #FIXME yikes I'm having to assume an IPC to approximate this?
-      self.access_pattern.write_freq = (self.access_pattern.total_writes / self.access_pattern.total_ins) / 1.e8 #FIXME yikes I'm having to assume an IPC to approximate this?
-    self.read_per_s = np.ceil((8 * self.access_pattern.read_size * self.access_pattern.read_freq) / self.input_cfg.word_width)
-    self.total_dynamic_read_power = self.read_per_s * self.output.read_energy / 1000. / 1000. / 1000. #scale to mW  FIXME: CL added
-      #calculate total # writes / s
-    self.write_per_s = np.ceil((8 * self.access_pattern.write_size * self.access_pattern.write_freq) / self.input_cfg.word_width)
-    self.total_dynamic_write_power = self.write_per_s * self.output.write_energy / 1000. / 1000. /1000. #scale to mW  FIXME: CL added
-    #total power = leakage + reads + writes
-    #FIXME add any refresh overhead
-    self.total_power = self.output.leakage_power + self.total_dynamic_read_power + self.total_dynamic_write_power
+    # compute memory accesses
+    self.read_accesses = np.ceil((8 * self.access_pattern.total_reads * self.access_pattern.read_size) / self.input_cfg.word_width) 
+    self.write_accesses = np.ceil((8 * self.access_pattern.total_writes * self.access_pattern.write_size) / self.input_cfg.word_width)
+    
+    # compute latency (ms)
+    self.total_read_latency = self.read_accesses * self.output.read_latency / 1000 / 1000
+    self.total_write_latency = self.write_accesses * self.output.write_latency / 1000 / 1000
+    self.total_latency = self.total_read_latency + self.total_write_latency
 
-    if (self.access_pattern.total_reads == -1):
-      #For 1 s timescale assumption, total energy = dynamic power * 1s
-      self.total_read_energy = self.total_dynamic_read_power
-      self.total_write_energy = self.total_dynamic_write_power
-      #use total reads / s to determine total latencies
-      self.total_read_latency = self.read_per_s * self.output.read_latency / 1000. / 1000. #scale to ms
-      self.total_write_latency = self.write_per_s * self.output.write_latency / 1000. / 1000. #scale to ms
-    else:
-      total_read_access = np.ceil((8 * self.access_pattern.total_reads * self.access_pattern.read_size) / self.input_cfg.word_width) 
-      self.total_read_energy = total_read_access * self.output.read_energy / 1000. / 1000. / 1000. #scale to mJ   FIXME: CL added
-      total_write_access = np.ceil((8 * self.access_pattern.total_writes * self.access_pattern.write_size) / self.input_cfg.word_width) 
-      self.total_write_energy = total_write_access * self.output.write_energy / 1000. / 1000. /1000. #scale to mJ   FIXME: CL added
-      self.total_read_latency = total_read_access * self.output.read_latency / 1000. / 1000. #scale to ms 
-      self.total_write_latency = total_write_access * self.output.write_latency / 1000. / 1000. #scale to ms
+    # compute energy (mJ)
+    self.total_read_energy = self.read_accesses * self.output.read_energy / 1000 / 1000 / 1000
+    self.total_write_energy = self.write_accesses * self.output.write_energy / 1000 / 1000 / 1000
+    self.total_energy = self.total_read_energy + self.total_write_energy # TODO: add to csv
 
-    #BW utilization by total bytes transferred per s / reported BW
-    self.read_bw_utilization = ((self.read_per_s * self.input_cfg.word_width) / (self.output.read_bw * 8e9)) * 100
-    self.write_bw_utilization = ((self.write_per_s * self.input_cfg.word_width) / (self.output.write_bw * 8e9)) * 100
+    # compute power (mW)
+    self.total_dynamic_read_power = (self.total_read_energy / self.total_read_latency) * 1000
+    self.total_dynamic_write_power = (self.total_write_energy / self.total_write_latency) * 1000
+    self.total_power = (self.total_energy / self.total_latency) * 1000
+    # if self.input_cfg.cell_type.mem_cell_type == 'SRAM':
+    #    self.total_power += self.output.leakage_power
   
   def report_header(self): #FIXME report all results
     print("Total Dynamic Read Power (mW)\tTotal Dynamic Write Power (mW)\tTotal Power (mW)", end ="\t")
-    print("Total Dynamic Read Energy (mJ)\tTotal Dynamic Write Energy (mJ)", end ="\t")
-    print("Total Read Latency (ms)\tTotal Write Latency (ms)\tRead BW Util\tWrite BW Util")
+    print("Total Dynamic Read Energy (mJ)\tTotal Dynamic Write Energy (mJ)\tTotal Dynamic Energy (mJ)", end ="\t")
+    print("Total Read Latency (ms)\tTotal Write Latency (ms)\tTotal Latency (ms)\tRead BW Util\tWrite BW Util")
 
   def report_result(self):
     print(self.total_dynamic_read_power, end ="\t")  
@@ -85,8 +77,10 @@ class ExperimentResult:
     print(self.total_power, end ="\t")
     print(self.total_read_energy, end ="\t")  
     print(self.total_write_energy, end ="\t")  
+    print(self.total_energy, end ="\t")  
     print(self.total_read_latency, end="\t")
     print(self.total_write_latency, end ="\t")
+    print(self.total_latency, end ="\t")
     print(self.read_bw_utilization, end="\t")
     print(self.write_bw_utilization, end = "\t")
     print()
@@ -102,7 +96,7 @@ class ExperimentResult:
     cell_headers, cell_vals = parse_nvsim_input_file(cell_cfg_path)
     mem_headers, mem_vals = parse_nvsim_input_file(mem_cfg_path)
 
-    row_to_insert = ["Benchmark Name", "Read Accesses", "Write Accesses", "Total Dynamic Read Power (mW)", "Total Dynamic Write Power (mW)", "Total Power (mW)", "Total Dynamic Read Energy (mJ)", "Total Dynamic Write Energy (mJ)", "Total Read Latency (ms)", "Total Write Latency (ms)", "Read BW Util", "Write BW Util", "Area (mm^2)", "Area Efficiency (percent)", "Read Latency (ns)", "Write Latency (ns)", "Read Energy (pJ)", "Write Energy (pJ)", "Leakage Power (mW)", "Bits Per Cell"]
+    row_to_insert = ["Benchmark Name", "Read Accesses", "Write Accesses", "Total Dynamic Read Power (mW)", "Total Dynamic Write Power (mW)", "Total Power (mW)", "Total Dynamic Read Energy (mJ)", "Total Dynamic Write Energy (mJ)", "Total Dynamic Energy (mJ)", "Total Read Latency (ms)", "Total Write Latency (ms)", "Total Latency (ms)", "Total Latency (ms)", "Total Latency (ms)", "Read BW Util", "Write BW Util", "Area (mm^2)", "Area Efficiency (percent)", "Read Latency (ns)", "Write Latency (ns)", "Read Energy (pJ)", "Write Energy (pJ)", "Leakage Power (mW)", "Bits Per Cell"]
     
 
     cell_headers.extend(mem_headers)
@@ -133,7 +127,7 @@ class ExperimentResult:
     else:
       bits_per_cell = 1
 
-    row_to_insert = [access_pattern.benchmark_name, access_pattern.read_freq, access_pattern.write_freq, self.total_dynamic_read_power, self.total_dynamic_write_power, self.total_power, self.total_read_energy, self.total_write_energy, self.total_read_latency, self.total_write_latency, self.read_bw_utilization, self.write_bw_utilization, self.output.area, self.output.area_efficiency, self.output.read_latency, self.output.write_latency, self.output.read_energy, self.output.write_energy, self.output.leakage_power, bits_per_cell]
+    row_to_insert = [access_pattern.benchmark_name, self.read_accesses, self.write_accesses, self.total_dynamic_read_power, self.total_dynamic_write_power, self.total_power, self.total_read_energy, self.total_write_energy, self.total_energy, self.total_read_latency, self.total_write_latency, self.total_latency, self.read_bw_utilization, self.write_bw_utilization, self.output.area, self.output.area_efficiency, self.output.read_latency, self.output.write_latency, self.output.read_energy, self.output.write_energy, self.output.leakage_power, bits_per_cell]
 
     cell_vals.extend(mem_vals)
     cell_vals.extend(row_to_insert)
@@ -154,7 +148,7 @@ class ExperimentResult:
     cell_headers, cell_vals = parse_nvsim_input_file(cell_cfg_path)
     mem_headers, mem_vals = parse_nvsim_input_file(mem_cfg_path)
 
-    row_to_insert = [write_accesses_header, read_accesses_header, "Total Dynamic Read Power (mW)", "Total Dynamic Write Power (mW)", "Total Power (mW)", "Total Dynamic Read Energy (mJ)", "Total Dynamic Write Energy (mJ)", "Total Read Latency (ms)", "Total Write Latency (ms)", "Read BW Util", "Write BW Util", "Area (mm^2)", "Area Efficiency (percent)", "Read Latency (ns)", "Write Latency (ns)", "Read Energy (pJ)", "Write Energy (pJ)", "Leakage Power (mW)"]
+    row_to_insert = [write_accesses_header, read_accesses_header, "Total Dynamic Read Power (mW)", "Total Dynamic Write Power (mW)", "Total Power (mW)", "Total Dynamic Read Energy (mJ)", "Total Dynamic Write Energy (mJ)", "Total Dynamic Energy (mJ)", "Total Read Latency (ms)", "Total Write Latency (ms)", "Total Latency (ms)", "Read BW Util", "Write BW Util", "Area (mm^2)", "Area Efficiency (percent)", "Read Latency (ns)", "Write Latency (ns)", "Read Energy (pJ)", "Write Energy (pJ)", "Leakage Power (mW)"]
    
     cell_headers.extend(mem_headers)
     cell_headers.extend(row_to_insert)
@@ -187,7 +181,7 @@ class ExperimentResult:
     cell_headers, cell_vals = parse_nvsim_input_file(cell_cfg_path)
     mem_headers, mem_vals = parse_nvsim_input_file(mem_cfg_path)
 
-    row_to_insert = [num_write_accesses, num_read_accesses, self.total_dynamic_read_power, self.total_dynamic_write_power, self.total_power, self.total_read_energy, self.total_write_energy, self.total_read_latency, self.total_write_latency, self.read_bw_utilization, self.write_bw_utilization, self.output.area, self.output.area_efficiency, self.output.read_latency, self.output.write_latency, self.output.read_energy, self.output.write_energy, self.output.leakage_power]
+    row_to_insert = [num_write_accesses, num_read_accesses, self.total_dynamic_read_power, self.total_dynamic_write_power, self.total_power, self.total_read_energy, self.total_write_energy, self.total_energy, self.total_read_latency, self.total_write_latency, self.total_latency, self.read_bw_utilization, self.write_bw_utilization, self.output.area, self.output.area_efficiency, self.output.read_latency, self.output.write_latency, self.output.read_energy, self.output.write_energy, self.output.leakage_power]
 
     cell_vals.extend(mem_vals)
     cell_vals.extend(row_to_insert)

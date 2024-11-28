@@ -44,7 +44,7 @@ class NVSimOutputConfig: #initialized to 16nm SRAM, 4MB
 		read_energy=-1, #pJ/access
 		write_latency=-1, #ns
 		write_bw=-1, #GB/s
-		write_energy=-1, #nJ/access
+		write_energy=-1, #pJ/access
 		leakage_power=-1, #mW
 		area=-1, #mm^2
 		area_efficiency=-1 #percentage

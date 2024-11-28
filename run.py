@@ -129,12 +129,12 @@ if __name__ == '__main__':
   if "exp_name" in config["experiment"]:
       if config["experiment"]["exp_name"]:
           exp_name = config["experiment"]["exp_name"]
-  if "read_frequency" in config["experiment"]:
-      if isinstance(config["experiment"]["read_frequency"], (int, float)):
-          read_frequency = config["experiment"]["read_frequency"]
-  if "write_frequency" in config["experiment"]:
-      if isinstance(config["experiment"]["write_frequency"], (int, float)):
-          write_frequency = config["experiment"]["write_frequency"]
+  if "total_reads" in config["experiment"]:
+      if isinstance(config["experiment"]["total_reads"], (int, float)):
+          total_reads = config["experiment"]["total_reads"]
+  if "total_writes" in config["experiment"]:
+      if isinstance(config["experiment"]["total_writes"], (int, float)):
+          total_writes = config["experiment"]["total_writes"]
   if "read_size" in config["experiment"]:
       if isinstance(config["experiment"]["read_size"], (int,float)):
           read_size = config["experiment"]["read_size"]
@@ -182,9 +182,9 @@ if __name__ == '__main__':
           for _capacity in capacity:
               for _bits_per_cell in bits_per_cell:
                   access_pattern = nvmexplorer_src.input_defs.access_pattern.PatternConfig(exp_name = exp_name,
-                      read_freq = read_frequency,
+                      total_reads = total_reads,
                       read_size = read_size,
-                      write_freq = write_frequency,
+                      total_writes = total_writes,
                       write_size = write_size,
                       workingset = working_set)
                   
