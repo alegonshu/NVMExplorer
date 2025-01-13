@@ -57,14 +57,12 @@ class ExperimentResult:
     # compute energy (mJ)
     self.total_read_energy = self.read_accesses * self.output.read_energy / 1000 / 1000 / 1000
     self.total_write_energy = self.write_accesses * self.output.write_energy / 1000 / 1000 / 1000
-    self.total_energy = self.total_read_energy + self.total_write_energy # TODO: add to csv
+    self.total_energy = self.total_read_energy + self.total_write_energy
 
     # compute power (mW)
-    self.total_dynamic_read_power = (self.total_read_energy / self.total_read_latency) * 1000
-    self.total_dynamic_write_power = (self.total_write_energy / self.total_write_latency) * 1000
-    self.total_power = (self.total_energy / self.total_latency) * 1000
-    # if self.input_cfg.cell_type.mem_cell_type == 'SRAM':
-    #    self.total_power += self.output.leakage_power
+    self.total_dynamic_read_power = self.total_read_energy / self.access_pattern.time_constraint
+    self.total_dynamic_write_power = self.total_write_energy / self.access_pattern.time_constraint
+    self.total_power = (self.total_energy /  self.access_pattern.time_constraint) #+ self.output.leakage_power
   
   def report_header(self): #FIXME report all results
     print("Total Dynamic Read Power (mW)\tTotal Dynamic Write Power (mW)\tTotal Power (mW)", end ="\t")
@@ -96,7 +94,7 @@ class ExperimentResult:
     cell_headers, cell_vals = parse_nvsim_input_file(cell_cfg_path)
     mem_headers, mem_vals = parse_nvsim_input_file(mem_cfg_path)
 
-    row_to_insert = ["Benchmark Name", "Read Accesses", "Write Accesses", "Total Dynamic Read Power (mW)", "Total Dynamic Write Power (mW)", "Total Power (mW)", "Total Dynamic Read Energy (mJ)", "Total Dynamic Write Energy (mJ)", "Total Dynamic Energy (mJ)", "Total Read Latency (ms)", "Total Write Latency (ms)", "Total Latency (ms)", "Total Latency (ms)", "Total Latency (ms)", "Read BW Util", "Write BW Util", "Area (mm^2)", "Area Efficiency (percent)", "Read Latency (ns)", "Write Latency (ns)", "Read Energy (pJ)", "Write Energy (pJ)", "Leakage Power (mW)", "Bits Per Cell"]
+    row_to_insert = ["Benchmark Name", "Read Accesses", "Write Accesses", "Total Dynamic Read Power (mW)", "Total Dynamic Write Power (mW)", "Total Power (mW)", "Total Dynamic Read Energy (mJ)", "Total Dynamic Write Energy (mJ)", "Total Dynamic Energy (mJ)", "Total Read Latency (ms)", "Total Write Latency (ms)", "Total Latency (ms)", "Read BW Util", "Write BW Util", "Area (mm^2)", "Area Efficiency (percent)", "Read Latency (ns)", "Write Latency (ns)", "Read Energy (pJ)", "Write Energy (pJ)", "Leakage Power (mW)", "Bits Per Cell"]
     
 
     cell_headers.extend(mem_headers)

@@ -141,6 +141,9 @@ if __name__ == '__main__':
   if "write_size" in config["experiment"]:
      if isinstance(config["experiment"]["write_size"], (int,float)):
           write_size = config["experiment"]["write_size"]
+  if "time_constraint" in config["experiment"]:
+     if isinstance(config["experiment"]["time_constraint"], (int,float)):
+          time_constraint = config["experiment"]["time_constraint"]
   if "working_set" in config["experiment"]:
       if config["experiment"]["working_set"]:
           working_set = config["experiment"]["working_set"]
@@ -174,7 +177,7 @@ if __name__ == '__main__':
   if "custom_cells" in config["experiment"]:
       cell_tentpoles = False
    
-  print("Successfully Loaded Config File")
+#   print("Successfully Loaded Config File")
   
   # The main loop of NVMExplorer
   for _cell_type in cell_type:
@@ -203,7 +206,7 @@ if __name__ == '__main__':
                   if not os.path.exists("data/mem_cfgs"): 
                       os.makedirs("data/mem_cfgs")
 
-                  results_csv = "{}/results/{}_{}MB_{}_{}BPC-{}.csv".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, exp_name)    
+                  results_csv = "{}/results/{}_{}MB_{}_{}BPC_{}b_{}.csv".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, word_width, exp_name)    
                   if os.path.exists(results_csv):
                       os.remove(results_csv)
 
@@ -257,7 +260,7 @@ if __name__ == '__main__':
 
                       if len(config["custom_cells"]) == 0: #use default values per technology
                         this_cell_path, this_cell_cfg = gen_custom_cell(_cell_type, {"name":"default", "bits_per_cell":_bits_per_cell})
-                        this_cfg_path = "data/mem_cfgs/{}_{}MB_{}_{}BPC_{}.cfg".format(_cell_type, _capacity, _opt_target, _bits_per_cell, "default")
+                        this_cfg_path = "data/mem_cfgs/{}_{}MB_{}_{}BPC_{}b_{}.cfg".format(_cell_type, _capacity, _opt_target, _bits_per_cell, word_width, "default")
                         nvsim_input_cfg = nvmexplorer_src.input_defs.nvsim_interface.NVSimInputConfig(mem_cfg_file_path = this_cfg_path, 
                                                        process_node = process_node,
                                                        opt_target = _opt_target,
@@ -272,8 +275,8 @@ if __name__ == '__main__':
                         cfg_paths.append(this_cfg_path)
                         nvsim_input_cfgs.append(nvsim_input_cfg)
                         output_paths.append("{}/nvsim_output/{}_{}MB_{}_{}BPC_{}b_{}_nvsim_output.pkl".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, word_width, "default"))
-                        stdout_logs.append("{}/logs/{}_{}MB_{}_{}BPC_{}_output".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, "default"))
-                        stderr_logs.append("{}/logs/{}_{}MB_{}_{}BPC_{}_error".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, "default"))
+                        stdout_logs.append("{}/logs/{}_{}MB_{}_{}BPC_{}b_{}_output".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, word_width, "default"))
+                        stderr_logs.append("{}/logs/{}_{}MB_{}_{}BPC_{}b_{}_error".format(output_path, _cell_type, _capacity, _opt_target, _bits_per_cell, word_width, "default"))
                       else:
                         for i in range(len(config["custom_cells"])):
                           this_custom_cell_input = config["custom_cells"][i]
@@ -344,4 +347,4 @@ if __name__ == '__main__':
     #                           generic_traffic_with_write_buff(access_pattern, nvsim_input_cfgs, nvsim_outputs, results_csv, cell_paths, cfg_paths)
       
     #   combine_csv(_cell_type, _bits_per_cell)
-      print("Reported Results; Evaluation Complete")
+    #   print("Reported Results; Evaluation Complete")

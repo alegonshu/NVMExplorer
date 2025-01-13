@@ -8,3 +8,4 @@ output/nvsim_output/*
 *__pycache__*
 *.pyc
 *.DS_Store*
+config/storage_model.json

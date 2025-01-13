@@ -11,7 +11,8 @@ class PatternConfig:
                 total_writes=-1, #total number of reads, can compute either way
 		write_size=8, #size/write in bytes
 		workingset=1, #total working set size in MB
-		total_ins=-1 #total number of ins in benchmark
+		total_ins=-1, #total number of ins in benchmark
+		time_constraint=1 # latency limit in s
 		):
     #load all the parameters into the pattern class
     #everything that defines the access pattern should be in this class
@@ -25,6 +26,7 @@ class PatternConfig:
     self.write_size = write_size
     self.workingset = workingset  
     self.total_ins = total_ins
+    self.time_constraint = time_constraint
 
 
 benchmarks = [ #collection of benchmarks from Tufts IISWC paper
